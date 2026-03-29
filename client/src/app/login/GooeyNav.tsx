@@ -99,7 +99,7 @@ export default function GooeyNav({
             <span className="absolute inset-[-1000%] animate-[spin_4s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,rgba(255,255,255,0.3)_0%,#000000_50%,rgba(255,255,255,0.3)_100%)] block opacity-50 group-hover:opacity-100 transition-opacity" />
             
             {/* Solid Dark Core tightly framing the rim */}
-            <div className="relative flex items-center justify-center gap-3 w-[calc(100%-2px)] h-[calc(100%-2px)] bg-black backdrop-blur-2xl rounded-full transition-colors group-hover:bg-zinc-900">
+            <div className="relative flex items-center justify-center gap-3 w-[calc(100%-2px)] h-[calc(100%-2px)] bg-black backdrop-blur-2xl rounded-full transition-colors group-hover:bg-black">
               {item.icon}
               <span className="text-base font-bold text-white tracking-wide whitespace-nowrap">{item.label}</span>
             </div>

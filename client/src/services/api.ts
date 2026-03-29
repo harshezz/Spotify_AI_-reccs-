@@ -74,9 +74,12 @@ api.interceptors.response.use(
         }
       } catch {
         // Refresh also failed — redirect to login
-        if (typeof window !== 'undefined') {
+        /* COMMENTED OUT FOR DIRECT DASHBOARD ACCESS
+        if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
           window.location.href = '/login';
         }
+        */
+        throw error;
       }
     }
 

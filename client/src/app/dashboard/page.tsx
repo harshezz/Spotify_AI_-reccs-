@@ -8,6 +8,7 @@ import AppShell from '@/components/layout/AppShell';
 import AudioPlayer from '@/components/player/AudioPlayer';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/hooks/useAuth';
+import { useSpotifyPlayer } from '@/hooks/useSpotifyPlayer';
 
 interface FeaturedPlaylist {
   id: string;
@@ -38,6 +39,86 @@ interface RecentlyPlayed {
   played_at: string;
 }
 
+const MOCK_RECENT: RecentlyPlayed[] = [
+  {
+    track: {
+      id: 'mock-t1',
+      name: 'Midnight Protocol',
+      artists: [{ name: 'Vibe Architect' }],
+      album: { images: [{ url: 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=400&h=400&fit=crop' }] },
+      duration_ms: 210000
+    },
+    played_at: new Date().toISOString()
+  },
+  {
+    track: {
+      id: 'mock-t2',
+      name: 'Synapse Drift',
+      artists: [{ name: 'Neural Link' }],
+      album: { images: [{ url: 'https://images.unsplash.com/photo-1557683316-973673baf926?w=400&h=400&fit=crop' }] },
+      duration_ms: 185000
+    },
+    played_at: new Date().toISOString()
+  },
+  {
+    track: {
+      id: 'mock-t3',
+      name: 'Static Echoes',
+      artists: [{ name: 'Freq Response' }],
+      album: { images: [{ url: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=400&fit=crop' }] },
+      duration_ms: 240000
+    },
+    played_at: new Date().toISOString()
+  }
+];
+
+const MOCK_PLAYLISTS: FeaturedPlaylist[] = [
+  {
+    id: 'mock-p1',
+    name: 'Cybernetic Lounge',
+    description: 'Deep immersion for late night session.',
+    images: [{ url: 'https://images.unsplash.com/photo-1514525253361-bee8718a74a2?w=600&h=450&fit=crop' }],
+    owner: { display_name: 'Vibe.NET' },
+    tracks: { total: 42 }
+  },
+  {
+    id: 'mock-p2',
+    name: 'Terminal Velocity',
+    description: 'High frequency data streams.',
+    images: [{ url: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600&h=450&fit=crop' }],
+    owner: { display_name: 'OS.System' },
+    tracks: { total: 128 }
+  },
+  {
+    id: 'mock-p3',
+    name: 'Neural Pathways',
+    description: 'Optimized for cognitive load.',
+    images: [{ url: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&h=450&fit=crop' }],
+    owner: { display_name: 'AI.Core' },
+    tracks: { total: 64 }
+  }
+];
+
+const MOCK_RELEASES: NewRelease[] = [
+  {
+    id: 'mock-r1',
+    name: 'Quantum Oscillation',
+    artists: [{ name: 'The Grid' }],
+    images: [{ url: 'https://images.unsplash.com/photo-1459749411177-042180ce673c?w=400&h=400&fit=crop' }],
+    album_type: 'album',
+    release_date: '2026-03-24'
+  },
+  {
+    id: 'mock-r2',
+    name: 'Digital Horizon',
+    artists: [{ name: 'Lumiere' }],
+    images: [{ url: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=400&h=400&fit=crop' }],
+    album_type: 'single',
+    release_date: '2026-03-22'
+  }
+];
+
+
 const MOOD_CATEGORIES = [
   { id: 'chill', label: 'Chill Protocol', ascii: '[ - ]', border: 'border-zinc-800 hover:border-zinc-500' },
   { id: 'energy', label: 'Amp Overdrive', ascii: '[ + ]', border: 'border-zinc-800 hover:border-white' },
@@ -56,6 +137,10 @@ export default function DashboardPage() {
   const [recentlyPlayed, setRecentlyPlayed] = useState<RecentlyPlayed[]>([]);
   const [isDataLoading, setIsDataLoading] = useState(true);
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
+  const [localVolume, setLocalVolume] = useState(50);
+
+  // ── Integrate Spotify Player ───────────────────────────────
+  const { player, playerState } = useSpotifyPlayer();
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -76,13 +161,21 @@ export default function DashboardPage() {
         ]);
 
         if (featuredRes.status === 'fulfilled') {
-          setFeaturedPlaylists(featuredRes.value.data.playlists?.items || []);
+          setFeaturedPlaylists(featuredRes.value.data.playlists?.items || MOCK_PLAYLISTS);
+        } else {
+          setFeaturedPlaylists(MOCK_PLAYLISTS);
         }
+        
         if (releasesRes.status === 'fulfilled') {
-          setNewReleases(releasesRes.value.data.albums?.items || []);
+          setNewReleases(releasesRes.value.data.albums?.items || MOCK_RELEASES);
+        } else {
+          setNewReleases(MOCK_RELEASES);
         }
+        
         if (recentRes.status === 'fulfilled') {
-          setRecentlyPlayed(recentRes.value.data.items || []);
+          setRecentlyPlayed(recentRes.value.data.items || MOCK_RECENT);
+        } else {
+          setRecentlyPlayed(MOCK_RECENT);
         }
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error);
@@ -112,8 +205,8 @@ export default function DashboardPage() {
 
   return (
     <AppShell>
-      <div className="min-h-screen pb-36 bg-black text-white selection:bg-white/20 font-sans">
-        <div className="px-6 lg:px-12 py-10 max-w-7xl mx-auto">
+      <div className="min-h-screen pb-40 bg-black text-white selection:bg-white/20 font-sans">
+        <div className="px-6 lg:px-12 py-10 w-full">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -376,6 +469,35 @@ export default function DashboardPage() {
             )}
           </AnimatePresence>
         </div>
+
+        {/* ── Fixed Audio Player ───────────────────────────────── */}
+        <AudioPlayer
+          currentTrack={playerState.currentTrack}
+          isPlaying={playerState.isPlaying}
+          progress={playerState.progress}
+          duration={playerState.duration}
+          volume={localVolume}
+          isMuted={localVolume === 0}
+          shuffle={playerState.shuffle}
+          repeat={playerState.repeat}
+          onPlay={() => player?.resume()}
+          onPause={() => player?.pause()}
+          onNext={() => player?.nextTrack()}
+          onPrevious={() => player?.previousTrack()}
+          onSeek={(pos) => player?.seek(pos)}
+          onVolumeChange={(vol) => {
+            setLocalVolume(vol);
+            player?.setVolume(vol / 100);
+          }}
+          onToggleMute={() => {
+            const newVol = localVolume === 0 ? 50 : 0;
+            setLocalVolume(newVol);
+            player?.setVolume(newVol / 100);
+          }}
+          onToggleShuffle={() => {}}
+          onToggleRepeat={() => {}}
+          variant="compact"
+        />
       </div>
     </AppShell>
   );

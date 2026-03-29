@@ -33,6 +33,7 @@ import ProgressBar        from './ProgressBar';
 import PlaybackControls   from './PlaybackControls';
 import VolumeControl      from './VolumeControl';
 
+import { useSidebar }    from '@/context/SidebarContext';
 import { SpotifyTrack }   from '@/types/spotify';
 import { formatArtists, getBestImage } from '@/lib/utils';
 import { slideUp, fadeIn, scaleIn } from '@/styles/animations';
@@ -95,6 +96,7 @@ export default function AudioPlayer({
   className = '',
 }: AudioPlayerProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const { width: sidebarWidth } = useSidebar();
 
   // ---------------------------------------------------------------------------
   // Album Art URL
@@ -238,12 +240,25 @@ export default function AudioPlayer({
   }
 
 
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  React.useEffect(() => {
+    const checkDesktop = () => setIsDesktop(window.innerWidth >= 1024);
+    checkDesktop();
+    window.addEventListener('resize', checkDesktop);
+    return () => window.removeEventListener('resize', checkDesktop);
+  }, []);
+
   // ═══════════════════════════════════════════════════════════════
   // COMPACT VARIANT — Now Playing Bar (bottom of screen)
   // ═══════════════════════════════════════════════════════════════
   return (
     <motion.div
-      className={`fixed bottom-0 left-0 right-0 z-50 ${className}`}
+      className={`fixed bottom-[64px] lg:bottom-0 right-0 z-50 w-full ${className}`}
+      style={{ 
+        left: isDesktop ? sidebarWidth : 0,
+        width: isDesktop ? `calc(100% - ${sidebarWidth}px)` : '100%'
+      }}
       variants={slideUp}
       initial="hidden"
       animate="visible"
@@ -263,9 +278,9 @@ export default function AudioPlayer({
           />
         </div>
 
-        <div className="flex items-center gap-4 px-4 py-3 max-w-screen-2xl mx-auto">
+        <div className="relative flex items-center justify-between px-8 lg:px-12 py-5 max-w-7xl mx-auto h-24 w-full">
           {/* ── Left: Track Info ───────────────────────────────── */}
-          <div className="flex items-center gap-3 flex-1 min-w-0 max-w-xs">
+          <div className="flex items-center gap-4 flex-1 min-w-0">
             {/* Mini album art */}
             <motion.div
               className="relative w-12 h-12 rounded-lg overflow-hidden shadow-lg flex-shrink-0"
@@ -298,38 +313,45 @@ export default function AudioPlayer({
             </div>
           </div>
 
-          {/* ── Center: Controls + Progress ────────────────────── */}
-          <div className="flex flex-col items-center gap-1 flex-1 max-w-lg">
-            <PlaybackControls
-              isPlaying={isPlaying}
-              shuffle={shuffle}
-              repeat={repeat}
-              onPlay={onPlay}
-              onPause={onPause}
-              onNext={onNext}
-              onPrevious={onPrevious}
-              onToggleShuffle={onToggleShuffle}
-              onToggleRepeat={onToggleRepeat}
-              className="!gap-3"
-            />
-            <ProgressBar
-              progress={progress}
-              duration={duration}
-              onSeek={onSeek}
-              className="w-full"
-            />
+          {/* ── Center: Controls + Progress (Perfectly Centered) ─── */}
+          <div className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 w-full max-w-2xl px-6 pointer-events-none md:relative md:left-0 md:translate-x-0 md:flex-1">
+            <div className="pointer-events-auto w-full flex flex-col items-center gap-1.5">
+              <PlaybackControls
+                isPlaying={isPlaying}
+                shuffle={shuffle}
+                repeat={repeat}
+                onPlay={onPlay}
+                onPause={onPause}
+                onNext={onNext}
+                onPrevious={onPrevious}
+                onToggleShuffle={onToggleShuffle}
+                onToggleRepeat={onToggleRepeat}
+                className="!gap-3 md:!gap-5"
+                // Pass a prop to hide secondary controls on mobile if needed, or handle in CSS
+              />
+              <div className="hidden md:block w-full">
+                <ProgressBar
+                  progress={progress}
+                  duration={duration}
+                  onSeek={onSeek}
+                  className="w-full"
+                />
+              </div>
+            </div>
           </div>
 
           {/* ── Right: Volume + Mini Equalizer ─────────────────── */}
-          <div className="flex items-center gap-3 flex-1 justify-end max-w-xs">
+          <div className="hidden sm:flex items-center gap-4 lg:gap-8 flex-1 justify-end min-w-0 pr-4 lg:pr-8">
             {/* Mini equalizer */}
-            <Equalizer
-              isPlaying={isPlaying}
-              width={60}
-              height={28}
-              barCount={12}
-              variant="mini"
-            />
+            <div className="hidden lg:block">
+              <Equalizer
+                isPlaying={isPlaying}
+                width={60}
+                height={28}
+                barCount={12}
+                variant="mini"
+              />
+            </div>
 
             <VolumeControl
               volume={volume}

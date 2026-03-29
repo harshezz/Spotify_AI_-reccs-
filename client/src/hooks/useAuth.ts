@@ -32,23 +32,20 @@ export function useAuth(): UseAuthReturn {
   const [error, setError]       = useState<string | null>(null);
 
   // ── Check current session on mount ──────────────────────────
-  const checkSession = useCallback(async () => {
-    try {
-      setLoading(true);
-      const session = await spotifyService.getSession();
+  // ── MOCK session check for development ───────────────────────
+  const MOCK_USER: AuthUser = {
+    id: 'mock-user-id',
+    displayName: 'Protocol.Guest',
+    email: 'guest@vibe.ai',
+    imageUrl: null,
+    product: 'premium'
+  };
 
-      if (session.authenticated && session.user) {
-        setUser(session.user);
-      } else {
-        setUser(null);
-      }
-    } catch (err) {
-      console.error('[Auth] Session check failed:', err);
-      setUser(null);
-      setError('Failed to verify session');
-    } finally {
-      setLoading(false);
-    }
+  const checkSession = useCallback(async () => {
+    setLoading(true);
+    // Directly set user to mock to bypass login
+    setUser(MOCK_USER);
+    setLoading(false);
   }, []);
 
   useEffect(() => {

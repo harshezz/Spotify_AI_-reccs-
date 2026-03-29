@@ -11,8 +11,10 @@ export default function HomePage() {
   const { isAuthenticated, isLoading } = useAuth();
   const { accentHex } = useTheme();
 
+  const hasRedirected = React.useRef(false);
   useEffect(() => {
-    if (!isLoading) {
+    if (!isLoading && !hasRedirected.current) {
+      hasRedirected.current = true;
       if (isAuthenticated) {
         router.replace('/dashboard');
       } else {

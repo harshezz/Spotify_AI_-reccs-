@@ -50,7 +50,7 @@ export default function PlaybackControls({
 
       {/* ── Shuffle ─────────────────────────────────────────── */}
       <motion.button
-        className={`${buttonBase} w-8 h-8 ${shuffle ? activeClass : ''}`}
+        className={`${buttonBase} w-8 h-8 hidden md:flex ${shuffle ? activeClass : ''}`}
         onClick={onToggleShuffle}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
@@ -122,7 +122,7 @@ export default function PlaybackControls({
 
       {/* ── Repeat ──────────────────────────────────────────── */}
       <motion.button
-        className={`${buttonBase} w-8 h-8 ${repeat !== 'off' ? activeClass : ''}`}
+        className={`${buttonBase} w-8 h-8 hidden md:flex ${repeat !== 'off' ? activeClass : ''}`}
         onClick={onToggleRepeat}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
